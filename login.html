@@ -77,12 +77,13 @@
   </div>
 
   <script>
-    const API_URL = 'http://localhost:8000/api';
+    const API_URL = 'https://vendedor-ia-backend.ixbtpi.easypanel.host/api';
 
     const emailInput    = document.getElementById('email');
     const passwordInput = document.getElementById('password');
     const btnLogin      = document.getElementById('btn-login');
     const alertBox      = document.getElementById('alert-box');
+
 
     function showAlert(message, type = 'error') {
       alertBox.innerHTML = `
@@ -127,8 +128,10 @@
           throw new Error(data.message || 'Credenciais inválidas.');
         }
 
-        // Salva token e email na sessionStorage para o painel acessar
-        sessionStorage.setItem('kj_token', data.token);
+        // Salva access_token e email na sessionStorage para o painel acessar
+        const accessToken = data.accessToken;
+        if (!accessToken) throw new Error('Token não recebido pelo servidor.');
+        sessionStorage.setItem('kj_token', accessToken);
         sessionStorage.setItem('kj_email', email);
 
         // Redireciona para o painel

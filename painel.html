@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Painel — Konvex Jr</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- Marked.js para renderizar markdown -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
   <style>
-    /* ── System Prompt Editor ── */
+    /* ══ System Prompt Editor ══ */
     .prompt-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -18,7 +20,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 18px 24px;
+      padding: 16px 24px;
       border-bottom: 1px solid var(--border);
       background: var(--bg2);
     }
@@ -35,29 +37,86 @@
       color: var(--text-muted);
     }
 
-    .prompt-card-title svg {
-      color: var(--orange);
+    .prompt-card-title svg { color: var(--orange); flex-shrink: 0; }
+
+    .prompt-actions { display: flex; gap: 8px; }
+
+    /* ── Toolbar de formatação ── */
+    .editor-toolbar {
+      display: none;
+      align-items: center;
+      gap: 2px;
+      padding: 10px 16px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .prompt-card.editing .editor-toolbar { display: flex; }
+
+    .toolbar-sep {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+      margin: 0 6px;
+    }
+
+    .tb-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 2px;
+      color: var(--text-muted);
+      font-family: var(--font-cond);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, color .15s, border-color .15s;
       flex-shrink: 0;
     }
 
-    .prompt-actions {
-      display: flex;
-      gap: 8px;
+    .tb-btn:hover {
+      background: var(--surface2);
+      border-color: var(--border);
+      color: var(--text);
     }
 
-    .prompt-body {
-      padding: 24px;
-    }
+    .tb-btn svg { pointer-events: none; }
 
-    /* Modo visualização */
-    .prompt-view {
-      font-family: var(--font);
-      font-size: 14px;
-      line-height: 1.75;
+    .tb-select {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 2px;
       color: var(--text-muted);
-      white-space: pre-wrap;
+      font-family: var(--font-cond);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      padding: 0 8px;
+      height: 30px;
+      cursor: pointer;
+      outline: none;
+      transition: border-color .15s, color .15s;
+    }
+
+    .tb-select:hover { border-color: var(--orange); color: var(--text); }
+    .tb-select option { background: var(--surface); color: var(--text); }
+
+    /* ── Corpo do card ── */
+    .prompt-body { padding: 0; }
+
+    /* Modo visualização (markdown renderizado) */
+    .prompt-view {
+      padding: 24px;
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text-muted);
+      min-height: 140px;
       word-break: break-word;
-      min-height: 120px;
     }
 
     .prompt-view.empty {
@@ -65,37 +124,75 @@
       font-style: italic;
     }
 
-    /* Modo edição */
-    .prompt-textarea {
-      width: 100%;
-      min-height: 180px;
+    /* Estilos markdown */
+    .prompt-view h1, .prompt-view h2, .prompt-view h3 {
+      font-family: var(--font-cond);
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text);
+      margin: 16px 0 8px;
+      letter-spacing: .04em;
+    }
+    .prompt-view h1 { font-size: 22px; }
+    .prompt-view h2 { font-size: 18px; }
+    .prompt-view h3 { font-size: 15px; color: var(--orange); }
+    .prompt-view strong { color: var(--text); font-weight: 700; }
+    .prompt-view em { color: var(--orange-light); font-style: italic; }
+    .prompt-view code {
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 2px;
-      padding: 16px;
-      font-family: var(--font);
+      padding: 1px 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      color: var(--orange-light);
+    }
+    .prompt-view pre {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 14px 16px;
+      margin: 12px 0;
+      overflow-x: auto;
+    }
+    .prompt-view pre code { background: none; border: none; padding: 0; }
+    .prompt-view ul, .prompt-view ol { padding-left: 22px; margin: 8px 0; }
+    .prompt-view li { margin: 4px 0; }
+    .prompt-view blockquote {
+      border-left: 3px solid var(--orange);
+      margin: 12px 0;
+      padding: 8px 16px;
+      background: rgba(232,120,26,.05);
+      color: var(--text-muted);
+      font-style: italic;
+    }
+    .prompt-view hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+    .prompt-view a { color: var(--orange); text-decoration: underline; }
+    .prompt-view p { margin: 6px 0; }
+
+    /* Modo edição */
+    .prompt-textarea {
+      display: none;
+      width: 100%;
+      min-height: 220px;
+      background: var(--bg);
+      border: none;
+      border-top: 1px solid var(--border);
+      padding: 20px;
+      font-family: 'Courier New', monospace;
       font-size: 14px;
-      line-height: 1.75;
+      line-height: 1.8;
       color: var(--text);
       outline: none;
       resize: vertical;
-      transition: border-color .2s;
-      display: none;
     }
 
-    .prompt-textarea:focus {
-      border-color: var(--orange);
-    }
+    .prompt-textarea::placeholder { color: var(--text-dim); }
 
-    .prompt-textarea::placeholder {
-      color: var(--text-dim);
-    }
-
-    /* Estado: editando */
     .prompt-card.editing .prompt-view     { display: none; }
     .prompt-card.editing .prompt-textarea { display: block; }
 
-    /* Botão editar */
+    /* ── Botões de ação ── */
     .btn-edit {
       background: transparent;
       border: 1px solid var(--border);
@@ -113,10 +210,8 @@
       align-items: center;
       gap: 6px;
     }
-
     .btn-edit:hover { border-color: var(--orange); color: var(--orange); }
 
-    /* Botão salvar */
     .btn-save {
       background: var(--orange);
       border: 1px solid var(--orange);
@@ -134,10 +229,9 @@
       align-items: center;
       gap: 6px;
     }
+    .btn-save:hover:not(:disabled) { background: var(--orange-light); }
+    .btn-save:disabled { background: var(--border-light); border-color: var(--border-light); cursor: not-allowed; }
 
-    .btn-save:hover { background: var(--orange-light); }
-
-    /* Botão cancelar */
     .btn-cancel {
       background: transparent;
       border: 1px solid var(--border);
@@ -155,15 +249,13 @@
       align-items: center;
       gap: 6px;
     }
-
     .btn-cancel:hover { border-color: var(--error); color: var(--error); }
 
-    /* No modo edição, alterna os botões */
     .prompt-card.editing .btn-edit   { display: none; }
     .prompt-card.editing .btn-save   { display: flex; }
     .prompt-card.editing .btn-cancel { display: flex; }
 
-    /* Toast de confirmação */
+    /* ── Toast ── */
     .toast {
       position: fixed;
       bottom: 32px;
@@ -174,7 +266,6 @@
       border-radius: 3px;
       padding: 12px 20px;
       font-size: 13px;
-      color: var(--success);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -185,11 +276,25 @@
       pointer-events: none;
       z-index: 999;
     }
+    .toast.show { opacity: 1; transform: translateY(0); }
 
-    .toast.show {
-      opacity: 1;
-      transform: translateY(0);
+    /* ── Spinner ── */
+    .prompt-loading {
+      padding: 32px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-dim);
+      font-size: 13px;
     }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--orange);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body style="display:flex; flex-direction:column; min-height:100vh;">
@@ -232,6 +337,7 @@
     <p class="section-title">Configuração do Agente</p>
 
     <div class="prompt-card" id="prompt-card">
+
       <div class="prompt-card-header">
         <div class="prompt-card-title">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -246,25 +352,109 @@
         </div>
       </div>
 
+      <!-- Toolbar (visível só no modo edição) -->
+      <div class="editor-toolbar">
+
+        <select class="tb-select" id="tb-heading" title="Títulos">
+          <option value="">Parágrafo</option>
+          <option value="h1">Título 1</option>
+          <option value="h2">Título 2</option>
+          <option value="h3">Título 3</option>
+        </select>
+
+        <div class="toolbar-sep"></div>
+
+        <button class="tb-btn" id="tb-bold" title="Negrito (Ctrl+B)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>
+          </svg>
+        </button>
+
+        <button class="tb-btn" id="tb-italic" title="Itálico (Ctrl+I)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/>
+          </svg>
+        </button>
+
+        <button class="tb-btn" id="tb-strike" title="Riscado">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <path d="M16 6C16 6 14.5 4 12 4C9.5 4 7 5.5 7 8C7 10.5 9 11.5 12 12"/>
+            <path d="M8 18C8 18 9.5 20 12 20C14.5 20 17 18.5 17 16C17 13.5 15 12.5 12 12"/>
+          </svg>
+        </button>
+
+        <button class="tb-btn" id="tb-code" title="Código inline">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+          </svg>
+        </button>
+
+        <div class="toolbar-sep"></div>
+
+        <button class="tb-btn" id="tb-ul" title="Lista com marcadores">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/>
+            <circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/>
+            <circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+            <circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/>
+          </svg>
+        </button>
+
+        <button class="tb-btn" id="tb-ol" title="Lista numerada">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/>
+            <path d="M4 6h1v4" stroke-width="2"/><path d="M4 10h2" stroke-width="2"/>
+            <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" stroke-width="2"/>
+          </svg>
+        </button>
+
+        <button class="tb-btn" id="tb-codeblock" title="Bloco de código">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M9 9l-3 3 3 3"/><path d="M15 9l3 3-3 3"/>
+          </svg>
+        </button>
+
+        <button class="tb-btn" id="tb-quote" title="Citação">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/>
+            <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/>
+          </svg>
+        </button>
+
+        <div class="toolbar-sep"></div>
+
+        <button class="tb-btn" id="tb-hr" title="Linha divisória">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="3" y1="12" x2="21" y2="12"/>
+          </svg>
+        </button>
+
+      </div>
+
+      <!-- Corpo -->
       <div class="prompt-body">
-        <div class="prompt-view empty" id="prompt-view">
-          Nenhum system prompt definido. Clique em "Editar" para adicionar.
+        <div class="prompt-loading" id="prompt-loading">
+          <div class="spinner"></div>
+          Carregando system prompt...
         </div>
+        <div class="prompt-view empty" id="prompt-view" style="display:none;"></div>
         <textarea
           class="prompt-textarea"
           id="prompt-textarea"
-          placeholder="Digite aqui o system prompt do agente. Ex: Você é um assistente especializado em..."
+          placeholder="Digite aqui o system prompt em markdown...&#10;&#10;Suporte a **negrito**, _itálico_, # títulos, listas, `código` e mais."
         ></textarea>
       </div>
+
     </div>
 
   </main>
 
-  <!-- Toast -->
-  <div class="toast" id="toast">✓ System prompt salvo com sucesso.</div>
+  <div class="toast" id="toast"></div>
 
   <script>
-    // ── Proteção de rota: redireciona se não estiver logado ──
+    // ── Proteção de rota ──
     const token = sessionStorage.getItem('kj_token');
     const email = sessionStorage.getItem('kj_email');
 
@@ -272,22 +462,14 @@
       window.location.href = 'login.html';
     }
 
-    // ── Preenche dados do usuário ──
-    const avatarEl = document.getElementById('user-avatar');
-    const emailEl  = document.getElementById('user-email');
+    // ── Dados do usuário ──
+    document.getElementById('user-avatar').textContent = email
+      ? email.split('@')[0].slice(0, 2).toUpperCase() : '--';
+    document.getElementById('user-email').textContent = email;
 
-    emailEl.textContent = email;
-    avatarEl.textContent = email
-      ? email.split('@')[0].slice(0, 2).toUpperCase()
-      : '--';
-
-    // ── Data atual ──
-    const dateEl = document.getElementById('current-date');
-    dateEl.textContent = new Date().toLocaleDateString('pt-BR', {
-      weekday: 'long',
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
+    // ── Data ──
+    document.getElementById('current-date').textContent = new Date().toLocaleDateString('pt-BR', {
+      weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
     });
 
     // ── Logout ──
@@ -297,22 +479,29 @@
       window.location.href = 'login.html';
     });
 
-    // ── System Prompt Editor ──
+    // ════════════════════════════════════
+    //   SYSTEM PROMPT EDITOR
+    // ════════════════════════════════════
+    const API_LOAD = 'https://vendedor-ia-backend.ixbtpi.easypanel.host/api/prompt/load';
+    const API_SAVE = 'https://vendedor-ia-backend.ixbtpi.easypanel.host/api/prompt';
+
     const card      = document.getElementById('prompt-card');
     const viewEl    = document.getElementById('prompt-view');
+    const loadingEl = document.getElementById('prompt-loading');
     const textarea  = document.getElementById('prompt-textarea');
     const btnEdit   = document.getElementById('btn-edit');
     const btnSave   = document.getElementById('btn-save');
     const btnCancel = document.getElementById('btn-cancel');
     const toast     = document.getElementById('toast');
 
-    const API_PROMPT = 'http://localhost:8000/api/prompt';
-
     let savedPrompt = '';
 
+    // ── Renderiza markdown ──
     function renderView(text) {
+      loadingEl.style.display = 'none';
+      viewEl.style.display    = 'block';
       if (text && text.trim()) {
-        viewEl.textContent = text;
+        viewEl.innerHTML = marked.parse(text);
         viewEl.classList.remove('empty');
       } else {
         viewEl.textContent = 'Nenhum system prompt definido. Clique em "Editar" para adicionar.';
@@ -320,7 +509,7 @@
       }
     }
 
-    function showToast(message = '✓ System prompt salvo com sucesso.', isError = false) {
+    function showToast(message, isError = false) {
       toast.textContent = message;
       toast.style.borderLeftColor = isError ? 'var(--error)' : 'var(--success)';
       toast.style.color           = isError ? 'var(--error)' : 'var(--success)';
@@ -328,48 +517,59 @@
       setTimeout(() => toast.classList.remove('show'), 3500);
     }
 
-    // ── Carrega o prompt via GET /api/prompt ──
+    // ── Carrega via POST /api/prompt/load ──
     async function loadPrompt() {
+      loadingEl.style.display = 'flex';
+      viewEl.style.display    = 'none';
       try {
-        const res = await fetch(API_PROMPT, {
-          headers: { 'Authorization': `Bearer ${token}` },
+        const res = await fetch(API_LOAD, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'access-token': token,
+          },
+          body: JSON.stringify({ id: 'system' }),
         });
         if (!res.ok) throw new Error();
         const data = await res.json();
-        savedPrompt = data.prompt || '';
+        // Resposta esperada: { systemPrompt: { text: "...", id: "system" } }
+        savedPrompt = data.systemPrompt?.text || '';
         renderView(savedPrompt);
       } catch {
+        savedPrompt = '';
         renderView('');
       }
     }
 
+    // ── Salva via POST /api/prompt ──
     async function savePrompt(text) {
-      btnSave.disabled = true;
+      btnSave.disabled    = true;
       btnSave.textContent = 'Salvando...';
       try {
-        const res = await fetch(API_PROMPT, {
+        const res = await fetch(API_SAVE, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            'access-token': token,
           },
-          body: JSON.stringify({ prompt: text }),
+          body: JSON.stringify({ systemPrompt: text }),
         });
         if (!res.ok) throw new Error();
         savedPrompt = text;
         renderView(savedPrompt);
         card.classList.remove('editing');
         showToast('✓ System prompt salvo com sucesso.');
+        // Recarrega do servidor para confirmar persistência
+        loadPrompt();
       } catch {
         showToast('✕ Erro ao salvar. Tente novamente.', true);
       } finally {
-        btnSave.disabled = false;
+        btnSave.disabled    = false;
         btnSave.textContent = '✓ Salvar';
       }
     }
 
-    loadPrompt();
-
+    // ── Botões principais ──
     btnEdit.addEventListener('click', () => {
       textarea.value = savedPrompt;
       card.classList.add('editing');
@@ -383,6 +583,99 @@
     btnSave.addEventListener('click', () => {
       savePrompt(textarea.value.trim());
     });
+
+    // ════════════════════════════════════
+    //   TOOLBAR MARKDOWN
+    // ════════════════════════════════════
+
+    function getSel() {
+      return {
+        start:    textarea.selectionStart,
+        end:      textarea.selectionEnd,
+        selected: textarea.value.slice(textarea.selectionStart, textarea.selectionEnd),
+      };
+    }
+
+    function applySel(newVal, newStart, newEnd) {
+      textarea.value = newVal;
+      textarea.setSelectionRange(newStart, newEnd);
+      textarea.focus();
+    }
+
+    // Envolve seleção com marcador (toggle)
+    function wrapInline(marker, placeholder) {
+      const { start, end, selected } = getSel();
+      const val    = textarea.value;
+      const before = val.slice(start - marker.length, start);
+      const after  = val.slice(end, end + marker.length);
+      if (before === marker && after === marker) {
+        // Desfaz
+        const nv = val.slice(0, start - marker.length) + selected + val.slice(end + marker.length);
+        applySel(nv, start - marker.length, end - marker.length);
+      } else {
+        const content = selected || placeholder;
+        const nv = val.slice(0, start) + marker + content + marker + val.slice(end);
+        applySel(nv, start + marker.length, start + marker.length + content.length);
+      }
+    }
+
+    // Adiciona prefixo em cada linha selecionada
+    function prefixLines(prefix, placeholder) {
+      const { start, end } = getSel();
+      const val       = textarea.value;
+      const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+      const lineEnd   = val.indexOf('\n', end);
+      const block     = val.slice(lineStart, lineEnd === -1 ? undefined : lineEnd);
+      const lines     = block.split('\n');
+      const newLines  = lines.map(l => prefix + (l || placeholder));
+      const newBlock  = newLines.join('\n');
+      const nv        = val.slice(0, lineStart) + newBlock + (lineEnd === -1 ? '' : val.slice(lineEnd));
+      applySel(nv, lineStart, lineStart + newBlock.length);
+    }
+
+    // Bindings
+    document.getElementById('tb-bold').addEventListener('click',      () => wrapInline('**', 'negrito'));
+    document.getElementById('tb-italic').addEventListener('click',    () => wrapInline('_', 'itálico'));
+    document.getElementById('tb-strike').addEventListener('click',    () => wrapInline('~~', 'riscado'));
+    document.getElementById('tb-code').addEventListener('click',      () => wrapInline('`', 'código'));
+    document.getElementById('tb-ul').addEventListener('click',        () => prefixLines('- ', 'item'));
+    document.getElementById('tb-ol').addEventListener('click',        () => prefixLines('1. ', 'item'));
+    document.getElementById('tb-quote').addEventListener('click',     () => prefixLines('> ', 'citação'));
+
+    document.getElementById('tb-codeblock').addEventListener('click', () => {
+      const { start, end, selected } = getSel();
+      const val     = textarea.value;
+      const content = selected || 'código aqui';
+      const insert  = '```\n' + content + '\n```';
+      const nv      = val.slice(0, start) + insert + val.slice(end);
+      applySel(nv, start + 4, start + 4 + content.length);
+    });
+
+    document.getElementById('tb-hr').addEventListener('click', () => {
+      const { start } = getSel();
+      const val    = textarea.value;
+      const insert = '\n---\n';
+      const nv     = val.slice(0, start) + insert + val.slice(start);
+      applySel(nv, start + insert.length, start + insert.length);
+    });
+
+    document.getElementById('tb-heading').addEventListener('change', function () {
+      const map = { h1: '# ', h2: '## ', h3: '### ' };
+      if (map[this.value]) prefixLines(map[this.value], 'título');
+      this.value = '';
+    });
+
+    // Atalhos de teclado
+    textarea.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'b') { e.preventDefault(); wrapInline('**', 'negrito'); }
+        if (e.key === 'i') { e.preventDefault(); wrapInline('_', 'itálico'); }
+        if (e.key === 's') { e.preventDefault(); savePrompt(textarea.value.trim()); }
+      }
+    });
+
+    // ── Carrega ao iniciar ──
+    loadPrompt();
   </script>
 
 </body>
