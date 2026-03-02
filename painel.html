@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel — Konvex Jr</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── System Prompt Editor ── */
+    .prompt-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .prompt-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg2);
+    }
+
+    .prompt-card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-cond);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .prompt-card-title svg {
+      color: var(--orange);
+      flex-shrink: 0;
+    }
+
+    .prompt-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .prompt-body {
+      padding: 24px;
+    }
+
+    /* Modo visualização */
+    .prompt-view {
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.75;
+      color: var(--text-muted);
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 120px;
+    }
+
+    .prompt-view.empty {
+      color: var(--text-dim);
+      font-style: italic;
+    }
+
+    /* Modo edição */
+    .prompt-textarea {
+      width: 100%;
+      min-height: 180px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 16px;
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.75;
+      color: var(--text);
+      outline: none;
+      resize: vertical;
+      transition: border-color .2s;
+      display: none;
+    }
+
+    .prompt-textarea:focus {
+      border-color: var(--orange);
+    }
+
+    .prompt-textarea::placeholder {
+      color: var(--text-dim);
+    }
+
+    /* Estado: editando */
+    .prompt-card.editing .prompt-view     { display: none; }
+    .prompt-card.editing .prompt-textarea { display: block; }
+
+    /* Botão editar */
+    .btn-edit {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      color: var(--text-muted);
+      font-family: var(--font-cond);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      cursor: pointer;
+      transition: border-color .2s, color .2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-edit:hover { border-color: var(--orange); color: var(--orange); }
+
+    /* Botão salvar */
+    .btn-save {
+      background: var(--orange);
+      border: 1px solid var(--orange);
+      border-radius: 2px;
+      color: #fff;
+      font-family: var(--font-cond);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      cursor: pointer;
+      transition: background .2s;
+      display: none;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-save:hover { background: var(--orange-light); }
+
+    /* Botão cancelar */
+    .btn-cancel {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      color: var(--text-dim);
+      font-family: var(--font-cond);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      cursor: pointer;
+      transition: border-color .2s, color .2s;
+      display: none;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-cancel:hover { border-color: var(--error); color: var(--error); }
+
+    /* No modo edição, alterna os botões */
+    .prompt-card.editing .btn-edit   { display: none; }
+    .prompt-card.editing .btn-save   { display: flex; }
+    .prompt-card.editing .btn-cancel { display: flex; }
+
+    /* Toast de confirmação */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      background: var(--surface2);
+      border: 1px solid var(--border-light);
+      border-left: 3px solid var(--success);
+      border-radius: 3px;
+      padding: 12px 20px;
+      font-size: 13px;
+      color: var(--success);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.4);
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity .25s, transform .25s;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body style="display:flex; flex-direction:column; min-height:100vh;">
+
+  <!-- ══ HEADER ══ -->
+  <header class="panel-header">
+    <a href="#" class="logo">
+      <div class="logo-mark"></div>
+      <span class="logo-name">Konvex<span>Jr</span></span>
+    </a>
+
+    <div class="header-divider"></div>
+
+    <div class="header-title">
+      <span class="header-dot"></span>
+      Painel do Administrador
+    </div>
+
+    <div class="header-right">
+      <div class="header-email-wrap">
+        <div class="header-avatar" id="user-avatar">--</div>
+        <span class="header-email" id="user-email">carregando...</span>
+      </div>
+      <button class="btn btn-ghost" id="btn-logout">⎋ Sair</button>
+    </div>
+  </header>
+
+  <!-- ══ CORPO ══ -->
+  <main class="panel-body anim-fade-up">
+
+    <div class="panel-top">
+      <div>
+        <p class="panel-top-label">Visão Geral</p>
+        <h1>Dashboard</h1>
+      </div>
+      <span class="panel-date" id="current-date"></span>
+    </div>
+
+    <!-- ══ QUADRO: System Prompt ══ -->
+    <p class="section-title">Configuração do Agente</p>
+
+    <div class="prompt-card" id="prompt-card">
+      <div class="prompt-card-header">
+        <div class="prompt-card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>
+          </svg>
+          System Prompt
+        </div>
+        <div class="prompt-actions">
+          <button class="btn-cancel" id="btn-cancel">✕ Cancelar</button>
+          <button class="btn-save"   id="btn-save">✓ Salvar</button>
+          <button class="btn-edit"   id="btn-edit">✎ Editar</button>
+        </div>
+      </div>
+
+      <div class="prompt-body">
+        <div class="prompt-view empty" id="prompt-view">
+          Nenhum system prompt definido. Clique em "Editar" para adicionar.
+        </div>
+        <textarea
+          class="prompt-textarea"
+          id="prompt-textarea"
+          placeholder="Digite aqui o system prompt do agente. Ex: Você é um assistente especializado em..."
+        ></textarea>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">✓ System prompt salvo com sucesso.</div>
+
+  <script>
+    // ── Proteção de rota: redireciona se não estiver logado ──
+    const token = sessionStorage.getItem('kj_token');
+    const email = sessionStorage.getItem('kj_email');
+
+    if (!token || !email) {
+      window.location.href = 'login.html';
+    }
+
+    // ── Preenche dados do usuário ──
+    const avatarEl = document.getElementById('user-avatar');
+    const emailEl  = document.getElementById('user-email');
+
+    emailEl.textContent = email;
+    avatarEl.textContent = email
+      ? email.split('@')[0].slice(0, 2).toUpperCase()
+      : '--';
+
+    // ── Data atual ──
+    const dateEl = document.getElementById('current-date');
+    dateEl.textContent = new Date().toLocaleDateString('pt-BR', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+
+    // ── Logout ──
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      sessionStorage.removeItem('kj_token');
+      sessionStorage.removeItem('kj_email');
+      window.location.href = 'login.html';
+    });
+
+    // ── System Prompt Editor ──
+    const card      = document.getElementById('prompt-card');
+    const viewEl    = document.getElementById('prompt-view');
+    const textarea  = document.getElementById('prompt-textarea');
+    const btnEdit   = document.getElementById('btn-edit');
+    const btnSave   = document.getElementById('btn-save');
+    const btnCancel = document.getElementById('btn-cancel');
+    const toast     = document.getElementById('toast');
+
+    const API_PROMPT = 'http://localhost:8000/api/prompt';
+
+    let savedPrompt = '';
+
+    function renderView(text) {
+      if (text && text.trim()) {
+        viewEl.textContent = text;
+        viewEl.classList.remove('empty');
+      } else {
+        viewEl.textContent = 'Nenhum system prompt definido. Clique em "Editar" para adicionar.';
+        viewEl.classList.add('empty');
+      }
+    }
+
+    function showToast(message = '✓ System prompt salvo com sucesso.', isError = false) {
+      toast.textContent = message;
+      toast.style.borderLeftColor = isError ? 'var(--error)' : 'var(--success)';
+      toast.style.color           = isError ? 'var(--error)' : 'var(--success)';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    // ── Carrega o prompt via GET /api/prompt ──
+    async function loadPrompt() {
+      try {
+        const res = await fetch(API_PROMPT, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        savedPrompt = data.prompt || '';
+        renderView(savedPrompt);
+      } catch {
+        renderView('');
+      }
+    }
+
+    async function savePrompt(text) {
+      btnSave.disabled = true;
+      btnSave.textContent = 'Salvando...';
+      try {
+        const res = await fetch(API_PROMPT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ prompt: text }),
+        });
+        if (!res.ok) throw new Error();
+        savedPrompt = text;
+        renderView(savedPrompt);
+        card.classList.remove('editing');
+        showToast('✓ System prompt salvo com sucesso.');
+      } catch {
+        showToast('✕ Erro ao salvar. Tente novamente.', true);
+      } finally {
+        btnSave.disabled = false;
+        btnSave.textContent = '✓ Salvar';
+      }
+    }
+
+    loadPrompt();
+
+    btnEdit.addEventListener('click', () => {
+      textarea.value = savedPrompt;
+      card.classList.add('editing');
+      textarea.focus();
+    });
+
+    btnCancel.addEventListener('click', () => {
+      card.classList.remove('editing');
+    });
+
+    btnSave.addEventListener('click', () => {
+      savePrompt(textarea.value.trim());
+    });
+  </script>
+
+</body>
+</html>
