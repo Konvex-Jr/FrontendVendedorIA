@@ -459,7 +459,7 @@
     const email = sessionStorage.getItem('kj_email');
 
     if (!token || !email) {
-      window.location.href = 'login.html';
+      window.location.href = 'index.html';
     }
 
     // ── Dados do usuário ──
@@ -476,7 +476,7 @@
     document.getElementById('btn-logout').addEventListener('click', () => {
       sessionStorage.removeItem('kj_token');
       sessionStorage.removeItem('kj_email');
-      window.location.href = 'login.html';
+      window.location.href = 'index.html';
     });
 
     // ════════════════════════════════════
