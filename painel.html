@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Painel — Konvex Jr</title>
   <link rel="stylesheet" href="style.css" />
-  <!-- Marked.js para renderizar markdown -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.6/sweetalert2.all.min.js"></script>
   <style>
     /* ══ System Prompt Editor ══ */
     .prompt-card {
@@ -109,7 +109,6 @@
     /* ── Corpo do card ── */
     .prompt-body { padding: 0; }
 
-    /* Modo visualização (markdown renderizado) */
     .prompt-view {
       padding: 24px;
       font-size: 14px;
@@ -124,7 +123,6 @@
       font-style: italic;
     }
 
-    /* Estilos markdown */
     .prompt-view h1, .prompt-view h2, .prompt-view h3 {
       font-family: var(--font-cond);
       font-weight: 700;
@@ -170,7 +168,6 @@
     .prompt-view a { color: var(--orange); text-decoration: underline; }
     .prompt-view p { margin: 6px 0; }
 
-    /* Modo edição */
     .prompt-textarea {
       display: none;
       width: 100%;
@@ -254,6 +251,77 @@
     .prompt-card.editing .btn-edit   { display: none; }
     .prompt-card.editing .btn-save   { display: flex; }
     .prompt-card.editing .btn-cancel { display: flex; }
+
+    /* ── Card de ações do agente ── */
+    .agent-actions-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+
+    .agent-actions-header {
+      display: flex;
+      align-items: center;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg2);
+    }
+
+    .agent-actions-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-cond);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .agent-actions-title svg { color: var(--orange); flex-shrink: 0; }
+
+    .agent-actions-body {
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .agent-actions-desc {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.7;
+      max-width: 540px;
+      margin: 0;
+    }
+
+    /* ── Botão Limpar Mensagens ── */
+    .btn-clear-messages {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      color: var(--text-muted);
+      font-family: var(--font-cond);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      cursor: pointer;
+      transition: border-color .2s, color .2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .btn-clear-messages:hover { border-color: #e53e3e; color: #e53e3e; }
+    .btn-clear-messages:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-clear-messages svg { flex-shrink: 0; }
 
     /* ── Toast ── */
     .toast {
@@ -449,6 +517,35 @@
 
     </div>
 
+    <!-- ══ QUADRO: Gerenciamento de Dados ══ -->
+    <div class="agent-actions-card">
+      <div class="agent-actions-header">
+        <div class="agent-actions-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6"/><path d="M14 11v6"/>
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+          Gerenciamento de Dados
+        </div>
+      </div>
+      <div class="agent-actions-body">
+        <p class="agent-actions-desc">
+          Apaga todo o histórico de mensagens armazenado pelo agente. Esta ação é <strong>irreversível</strong> — o agente perderá o contexto de todas as conversas anteriores.
+        </p>
+        <button class="btn-clear-messages" id="btn-clear-messages">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6"/><path d="M14 11v6"/>
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+          Limpar Mensagens
+        </button>
+      </div>
+    </div>
+
   </main>
 
   <div class="toast" id="toast"></div>
@@ -480,10 +577,11 @@
     });
 
     // ════════════════════════════════════
-    //   SYSTEM PROMPT EDITOR
+    //   CONSTANTES DE API
     // ════════════════════════════════════
-    const API_LOAD = 'https://vendedor-ia-backend.ixbtpi.easypanel.host/api/prompt/load';
-    const API_SAVE = 'https://vendedor-ia-backend.ixbtpi.easypanel.host/api/prompt';
+    const API_LOAD           = 'https://vendedor-ia-backend.ixbtpi.easypanel.host/api/prompt/load';
+    const API_SAVE           = 'https://vendedor-ia-backend.ixbtpi.easypanel.host/api/prompt';
+    const API_CLEAR_MESSAGES = 'https://vendedor-ia-backend.ixbtpi.easypanel.host/api/messages/clear';
 
     const card      = document.getElementById('prompt-card');
     const viewEl    = document.getElementById('prompt-view');
@@ -532,7 +630,6 @@
         });
         if (!res.ok) throw new Error();
         const data = await res.json();
-        // Resposta esperada: { systemPrompt: { text: "...", id: "system" } }
         savedPrompt = data.systemPrompt?.text || '';
         renderView(savedPrompt);
       } catch {
@@ -559,7 +656,6 @@
         renderView(savedPrompt);
         card.classList.remove('editing');
         showToast('✓ System prompt salvo com sucesso.');
-        // Recarrega do servidor para confirmar persistência
         loadPrompt();
       } catch {
         showToast('✕ Erro ao salvar. Tente novamente.', true);
@@ -585,6 +681,90 @@
     });
 
     // ════════════════════════════════════
+    //   LIMPAR MENSAGENS — com SweetAlert2
+    // ════════════════════════════════════
+    document.getElementById('btn-clear-messages').addEventListener('click', async () => {
+
+      // ── Popup de confirmação ──
+      const { isConfirmed } = await Swal.fire({
+        title: 'Limpar histórico de mensagens?',
+        html: `
+          <p style="margin: 0 0 10px; line-height: 1.65;">
+            Esta ação irá apagar <strong>permanentemente</strong> todo o histórico
+            de conversas armazenado pelo agente.
+          </p>
+          <p style="margin: 0; line-height: 1.65;">
+            O agente perderá o contexto de todas as interações anteriores.
+            Esta operação <strong>não pode ser desfeita</strong>.
+          </p>
+        `,
+        icon: 'warning',
+        showCancelButton:    true,
+        confirmButtonText:   'Sim, limpar tudo',
+        cancelButtonText:    'Cancelar',
+        confirmButtonColor:  '#e53e3e',
+        cancelButtonColor:   '#6b7280',
+        reverseButtons:      true,
+        focusCancel:         true,
+      });
+
+      if (!isConfirmed) return;
+
+      // ── Chama a API ──
+      const btn = document.getElementById('btn-clear-messages');
+      btn.disabled    = true;
+      btn.textContent = 'Limpando...';
+
+      try {
+        const res = await fetch(API_CLEAR_MESSAGES, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'access-token': token,
+          },
+        });
+
+        if (!res.ok) throw new Error();
+
+        // ── Sucesso ──
+        await Swal.fire({
+          title:            'Histórico limpo!',
+          text:             'Todas as mensagens foram removidas com sucesso.',
+          icon:             'success',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#e8781a',
+          timer:            3000,
+          timerProgressBar: true,
+        });
+
+        showToast('✓ Histórico de mensagens limpo com sucesso.');
+
+      } catch {
+        // ── Erro ──
+        await Swal.fire({
+          title:            'Erro ao limpar',
+          text:             'Não foi possível limpar as mensagens. Tente novamente.',
+          icon:             'error',
+          confirmButtonText: 'Fechar',
+          confirmButtonColor: '#e8781a',
+        });
+
+        showToast('✕ Erro ao limpar mensagens.', true);
+
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6"/><path d="M14 11v6"/>
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+          Limpar Mensagens`;
+      }
+    });
+
+    // ════════════════════════════════════
     //   TOOLBAR MARKDOWN
     // ════════════════════════════════════
 
@@ -602,14 +782,12 @@
       textarea.focus();
     }
 
-    // Envolve seleção com marcador (toggle)
     function wrapInline(marker, placeholder) {
       const { start, end, selected } = getSel();
       const val    = textarea.value;
       const before = val.slice(start - marker.length, start);
       const after  = val.slice(end, end + marker.length);
       if (before === marker && after === marker) {
-        // Desfaz
         const nv = val.slice(0, start - marker.length) + selected + val.slice(end + marker.length);
         applySel(nv, start - marker.length, end - marker.length);
       } else {
@@ -619,7 +797,6 @@
       }
     }
 
-    // Adiciona prefixo em cada linha selecionada
     function prefixLines(prefix, placeholder) {
       const { start, end } = getSel();
       const val       = textarea.value;
@@ -633,7 +810,6 @@
       applySel(nv, lineStart, lineStart + newBlock.length);
     }
 
-    // Bindings
     document.getElementById('tb-bold').addEventListener('click',      () => wrapInline('**', 'negrito'));
     document.getElementById('tb-italic').addEventListener('click',    () => wrapInline('_', 'itálico'));
     document.getElementById('tb-strike').addEventListener('click',    () => wrapInline('~~', 'riscado'));
@@ -665,7 +841,6 @@
       this.value = '';
     });
 
-    // Atalhos de teclado
     textarea.addEventListener('keydown', (e) => {
       if (e.ctrlKey || e.metaKey) {
         if (e.key === 'b') { e.preventDefault(); wrapInline('**', 'negrito'); }
