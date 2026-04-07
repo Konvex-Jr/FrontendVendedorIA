@@ -1016,7 +1016,9 @@
         const data = await res.json();
         // interval vem em ms como string → converte para minutos
         if (data.interval) {
+          console.log('setando valor:', Math.round(parseInt(data.interval, 10) / 60000));
           document.getElementById('followup-interval').value = Math.round(parseInt(data.interval, 10) / 60000);
+          console.log('valor após set:', document.getElementById('followup-interval').value);
         }
       } catch { /* silencioso */ }
     }
@@ -1143,7 +1145,7 @@
 
     // ── Inicialização ──
     loadPrompt();
-    setTimeout(loadFollowUpInterval, 100);
+    setTimeout(loadFollowUpInterval, 10000);
   </script>
 
 </body>
