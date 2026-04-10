@@ -1027,7 +1027,7 @@
     //   INTERVALO SMART FOLLOW-UP
     // ════════════════════════════════════
 
-    async function loadFollowUpInterval() {
+    async function loadFollowUpConfig() {
       try {
         const res = await fetch(API_FOLLOWUP_LOAD, {
           method: 'POST',
@@ -1039,14 +1039,13 @@
         });
         if (!res.ok) return;
         const data = await res.json();
+
         // interval vem em ms como string → converte para minutos
         if (data.interval) {
-          console.log('setando valor:', Math.round(parseInt(data.interval, 10) / 60000));
           document.getElementById('followup-interval').value = Math.round(parseInt(data.interval, 10) / 60000);
-          console.log('valor após set:', document.getElementById('followup-interval').value);
         }
 
-        // colocando firstMessageText
+        // primeira mensagem de follow-up
         if (data.firstMessageText) {
           document.getElementById('followup-first-message').value = data.firstMessageText;
         }
@@ -1090,8 +1089,8 @@
     });
 
     document.getElementById('btn-save-first-message').addEventListener('click', async () => {
-      const textarea = document.getElementById('followup-first-message');
-      const text = textarea.value.trim();
+      const firstMsgTextarea = document.getElementById('followup-first-message');
+      const text = firstMsgTextarea.value.trim();
       if (!text) {
         showToast('✕ Informe o texto da primeira mensagem.', true);
         return;
@@ -1205,8 +1204,9 @@
     });
 
     // ── Inicialização ──
+    // Ambas as chamadas acontecem imediatamente e em paralelo ao carregar a página
     loadPrompt();
-    setTimeout(loadFollowUpInterval, 10000);
+    loadFollowUpConfig();
   </script>
 
 </body>
