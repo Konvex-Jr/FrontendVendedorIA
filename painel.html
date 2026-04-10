@@ -1039,15 +1039,16 @@
         });
         if (!res.ok) return;
         const data = await res.json();
+        const config = data.scriptConfig || data;
 
         // interval vem em ms como string → converte para minutos
-        if (data.interval) {
-          document.getElementById('followup-interval').value = Math.round(parseInt(data.interval, 10) / 60000);
+        if (config.interval) {
+          document.getElementById('followup-interval').value = Math.round(parseInt(config.interval, 10) / 60000);
         }
 
         // primeira mensagem de follow-up
-        if (data.firstMessageText) {
-          document.getElementById('followup-first-message').value = data.firstMessageText;
+        if (config.firstMessageText) {
+          document.getElementById('followup-first-message').value = config.firstMessageText;
         }
       } catch { /* silencioso */ }
     }
