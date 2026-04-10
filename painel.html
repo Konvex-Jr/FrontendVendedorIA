@@ -644,26 +644,28 @@
 
     <!-- ══ CARD 2.5: Primeira Mensagem smartFollowUp ══ -->
     <div class="agent-actions-card">
-  <div class="agent-actions-header">
-    <div class="agent-actions-title">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-      </svg>
-      Primeira Mensagem de Follow-up
-    </div>
-  </div>
-  <div class="agent-actions-body">
-    <p class="agent-actions-desc">
-      Define o texto enviado ao cliente na <strong>primeira abordagem</strong> do smartFollowUp.
-    </p>
-    <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
-      <textarea id="followup-first-message" rows="4" style="width:100%; resize:vertical; padding:8px; background:var(--bg-input, #1a1a1a); color:var(--text-primary, #fff); border:1px solid var(--border, #333); border-radius:6px; font-size:14px;"></textarea>
-      <div style="display:flex; justify-content:flex-end;">
-        <button class="btn-save-inline" id="btn-save-first-message">✓ Salvar</button>
+      <div class="agent-actions-header">
+        <div class="agent-actions-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+          Primeira Mensagem de Follow-up
+        </div>
+      </div>
+      <div class="agent-actions-body">
+        <p class="agent-actions-desc">
+          Define o texto enviado ao cliente na <strong>primeira abordagem</strong> do smartFollowUp.
+        </p>
+        <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
+          <textarea id="followup-first-message" rows="4"
+            style="width:100%; resize:vertical; padding:8px; background:var(--bg-input, #1a1a1a); color:var(--text-primary, #fff); border:1px solid var(--border, #333); border-radius:6px; font-size:14px;"></textarea>
+          <div style="display:flex; justify-content:flex-end;">
+            <button class="btn-save-inline" id="btn-save-first-message">✓ Salvar</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
     <!-- ══ CARD 3: System Prompt ══ -->
     <div class="prompt-card" id="prompt-card">
@@ -832,7 +834,7 @@
     // ════════════════════════════════════
     //   CONSTANTES DE API
     // ════════════════════════════════════
-    const BASE_URL = 'http://localhost:8000';
+    const BASE_URL = 'https://vendedor-ia-backend.ixbtpi.easypanel.host';
 
     const API_PROMPT_LOAD = `${BASE_URL}/api/prompt/load`;
     const API_PROMPT_SAVE = `${BASE_URL}/api/prompt`;
@@ -1088,34 +1090,34 @@
     });
 
     document.getElementById('btn-save-first-message').addEventListener('click', async () => {
-    const textarea = document.getElementById('followup-first-message');
-    const text = textarea.value.trim();
-    if (!text) {
-      showToast('✕ Informe o texto da primeira mensagem.', true);
-      return;
-    }
-    const btn = document.getElementById('btn-save-first-message');
-    btn.disabled = true;
-    btn.textContent = 'Salvando...';
-    try {
-    const res = await fetch(API_FOLLOWUP_SAVE, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'access-token': token },
-      body: JSON.stringify({
-        key: FOLLOWUP_KEY,
-         interval: String((parseInt(document.getElementById('followup-interval').value, 10) || 0) * 60000),
-        firstMessageText: text,
-      }),
+      const textarea = document.getElementById('followup-first-message');
+      const text = textarea.value.trim();
+      if (!text) {
+        showToast('✕ Informe o texto da primeira mensagem.', true);
+        return;
+      }
+      const btn = document.getElementById('btn-save-first-message');
+      btn.disabled = true;
+      btn.textContent = 'Salvando...';
+      try {
+        const res = await fetch(API_FOLLOWUP_SAVE, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'access-token': token },
+          body: JSON.stringify({
+            key: FOLLOWUP_KEY,
+            interval: String((parseInt(document.getElementById('followup-interval').value, 10) || 0) * 60000),
+            firstMessageText: text,
+          }),
+        });
+        if (!res.ok) throw new Error();
+        showToast('✓ Primeira mensagem atualizada.');
+      } catch {
+        showToast('✕ Erro ao salvar mensagem. Tente novamente.', true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '✓ Salvar';
+      }
     });
-    if (!res.ok) throw new Error();
-    showToast('✓ Primeira mensagem atualizada.');
-  } catch {
-    showToast('✕ Erro ao salvar mensagem. Tente novamente.', true);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '✓ Salvar';
-  }
-});
 
     // ════════════════════════════════════
     //   TOOLBAR MARKDOWN
