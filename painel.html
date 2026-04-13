@@ -585,87 +585,77 @@
 
     <!-- ══ CARD 1: Gerenciamento de Dados ══ -->
     <div class="agent-actions-card">
-      <div class="agent-actions-header">
-        <div class="agent-actions-title">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6" />
-            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-            <path d="M10 11v6" />
-            <path d="M14 11v6" />
-            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-          </svg>
-          Gerenciamento de Dados
+        <div class="agent-actions-header">
+          <div class="agent-actions-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+              <path d="M10 11v6" />
+              <path d="M14 11v6" />
+              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+            </svg>
+            Gerenciamento de Dados
+          </div>
+        </div>
+        <div class="agent-actions-body">
+          <p class="agent-actions-desc">
+            Apaga todo o histórico de mensagens armazenado pelo agente. Esta ação é <strong>irreversível</strong> — o
+            agente perderá o contexto de todas as conversas anteriores.
+          </p>
+          <button class="btn-clear-messages" id="btn-clear-messages">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+              <path d="M10 11v6" />
+              <path d="M14 11v6" />
+              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+            </svg>
+            Limpar Mensagens
+          </button>
         </div>
       </div>
-      <div class="agent-actions-body">
-        <p class="agent-actions-desc">
-          Apaga todo o histórico de mensagens armazenado pelo agente. Esta ação é <strong>irreversível</strong> — o
-          agente perderá o contexto de todas as conversas anteriores.
-        </p>
-        <button class="btn-clear-messages" id="btn-clear-messages">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6" />
-            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-            <path d="M10 11v6" />
-            <path d="M14 11v6" />
-            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-          </svg>
-          Limpar Mensagens
-        </button>
-      </div>
-    </div>
 
-    <!-- ══ CARD 2: Intervalo smartFollowUp ══ -->
-    <div class="agent-actions-card">
-      <div class="agent-actions-header">
-        <div class="agent-actions-title">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
-          Intervalo de Follow-up
-        </div>
-      </div>
-      <div class="agent-actions-body">
-        <p class="agent-actions-desc">
-          Define o intervalo (em minutos) entre cada execução do <strong>smartFollowUp</strong>. O novo valor entra em
-          vigor no próximo ciclo do agente.
-        </p>
-        <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
-          <input type="number" id="followup-interval" class="interval-input" min="1" placeholder="ex: 30" />
-          <span class="interval-unit">MIN</span>
-          <button class="btn-save-inline" id="btn-save-interval">✓ Salvar</button>
-        </div>
-      </div>
-    </div>
 
-    <!-- ══ CARD 2.5: Primeira Mensagem smartFollowUp ══ -->
-    <div class="agent-actions-card">
-      <div class="agent-actions-header">
-        <div class="agent-actions-title">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
-          Primeira Mensagem de Follow-up
+        <!-- ══ CARD 2: Intervalo smartFollowUp ══ -->
+        <div class="agent-actions-card">
+        <div class="agent-actions-header">
+          <div class="agent-actions-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            Follow-up
+          </div>
         </div>
-      </div>
-      <div class="agent-actions-body">
-        <p class="agent-actions-desc">
-          Define o texto enviado ao cliente na <strong>primeira abordagem</strong> do smartFollowUp.
-        </p>
-        <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
-          <textarea id="followup-first-message" rows="4"
-            style="width:100%; resize:vertical; padding:8px; background:var(--bg-input, #1a1a1a); color:var(--text-primary, #fff); border:1px solid var(--border, #333); border-radius:6px; font-size:14px;"></textarea>
-          <div style="display:flex; justify-content:flex-end;">
-            <button class="btn-save-inline" id="btn-save-first-message">✓ Salvar</button>
+        <div class="agent-actions-body">
+          <p class="agent-actions-desc">
+            Define o intervalo (em minutos) entre cada execução do <strong>smartFollowUp</strong>. O novo valor entra em
+            vigor no próximo ciclo do agente.
+          </p>
+          <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+            <input type="number" id="followup-interval" class="interval-input" min="1" placeholder="ex: 30" />
+            <span class="interval-unit">MIN</span>
+            <button class="btn-save-inline" id="btn-save-interval">✓ Salvar</button>
+          </div>
+        </div>
+
+        <!-- ══ CARD 2.5: Primeira Mensagem smartFollowUp ══ -->
+        <div class="agent-actions-body">
+          <p class="agent-actions-desc">
+            Define o texto enviado ao cliente na <strong>PRIMEIRA ABORDAGEM</strong> do smartFollowUp.
+          </p>
+          <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
+            <textarea id="followup-first-message" rows="4"
+              style="width:100%; resize:vertical; padding:8px; background:var(--bg-input, #1a1a1a); color:var(--text-primary, #fff); border:1px solid var(--border, #333); border-radius:6px; font-size:14px;"></textarea>
+            <div style="display:flex; justify-content:flex-end;">
+              <button class="btn-save-inline" id="btn-save-first-message">✓ Salvar</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
     <!-- ══ CARD 3: System Prompt ══ -->
     <div class="prompt-card" id="prompt-card">
@@ -806,6 +796,7 @@
   <div class="toast" id="toast"></div>
 
   <script>
+    
     // ── Proteção de rota ──
     const token = sessionStorage.getItem('kj_token');
     const email = sessionStorage.getItem('kj_email');
