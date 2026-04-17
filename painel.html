@@ -924,8 +924,7 @@
           'access-token': SessionManager.getToken(),
         };
         const options = { method, headers };
-        if (payload) options.body = JSON.stringify(payload);
-
+        if (payload !== null) options.body = JSON.stringify(payload);
         const response = await fetch(`${CONFIG.API_BASE_URL}${endpoint}`, options);
         if (!response.ok) throw new Error(`API Request failed: ${response.status}`);
 
@@ -986,7 +985,7 @@
       async load() {
         this.toggleLoader(true);
         try {
-          const data = await ApiService.request(CONFIG.ENDPOINTS.PROMPT_LOAD, { id: 'system' });
+          const data = await ApiService.request(CONFIG.ENDPOINTS.BH_GETALL, {}, 'GET');
           this.savedContent = data.systemPrompt?.text || '';
           this.renderPreview(this.savedContent);
         } catch (error) {
@@ -1376,7 +1375,7 @@
 
       async load() {
         try {
-          const data = await ApiService.request(CONFIG.ENDPOINTS.BH_GETALL, null, 'POST');
+          const data = await ApiService.request(CONFIG.ENDPOINTS.BH_GETALL, null, 'GET');
           const list = data?.businessHour ?? [];
 
           const byDay = Object.fromEntries(list.map(bh => [bh.dia, bh]));
