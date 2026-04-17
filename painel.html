@@ -919,16 +919,24 @@
      */
     class ApiService {
       static async request(endpoint, payload = null, method = 'POST') {
-        const headers = {
-          'Content-Type': 'application/json',
-          'access-token': SessionManager.getToken(),
-        };
-        const options = { method, headers };
-        if (payload !== null && payload !== undefined && method !== 'GET') options.body = JSON.stringify(payload);
-        const response = await fetch(`${CONFIG.API_BASE_URL}${endpoint}`, options);
-        if (!response.ok) throw new Error(`API Request failed: ${response.status}`);
+          const headers = {
+              'Content-Type': 'application/json',
+              'access-token': SessionManager.getToken(),
+          };
+          const options = { method, headers };
+          if (payload) options.body = JSON.stringify(payload);
 
-        return response.json();
+          const response = await fetch(`${CONFIG.API_BASE_URL}${endpoint}`, options);
+          if (!response.ok) throw new Error(`API Request failed: ${response.status}`);
+
+          const contentLength = response.headers.get('content-length');
+          const contentType = response.headers.get('content-type');
+
+          if (contentLength === '0' || !contentType?.includes('application/json')) {
+              return null;
+          }
+
+          return response.json();
       }
     }
 
