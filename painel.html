@@ -875,7 +875,7 @@
         CONFIG_SAVE: '/api/config/follow-up',
         BH_LOAD: '/api/businessHour/',
         BH_UPDATE: '/api/businessHour/',
-        BH_GETALL: '/api/businessHour/'
+        BH_GETALL: '/api/loadBusinessHour/'
       },
       KEYS: {
         FOLLOWUP: 'smart_followup_interval',
@@ -985,7 +985,7 @@
       async load() {
         this.toggleLoader(true);
         try {
-          const data = await ApiService.request(CONFIG.ENDPOINTS.PROMPT_LOAD, null, 'GET');
+          const data = await ApiService.request(CONFIG.ENDPOINTS.PROMPT_LOAD, { id: 'system' });
           this.savedContent = data.systemPrompt?.text || '';
           this.renderPreview(this.savedContent);
         } catch (error) {
