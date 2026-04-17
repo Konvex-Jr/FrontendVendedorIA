@@ -656,6 +656,7 @@
         CONFIG_SAVE: '/api/config/follow-up',
         BH_LOAD:  '/api/businessHour/',
         BH_UPDATE: '/api/businessHour/',
+        BH_GETALL: '/api/businessHour/load'
       },
       KEYS: {
         FOLLOWUP: 'smart_followup_interval',
@@ -1156,15 +1157,17 @@
 
       async load() {
         try {
-          const results = await Promise.all(
-            this.days.map(d => ApiService.request(CONFIG.ENDPOINTS.BH_LOAD + d.key, null, 'GET').catch(() => null))
-          );
-          results.forEach((data, i) => {
-            if (!data?.businessHour) return;
-            const bh = data.businessHour;
-            this.days[i].closed     = !bh.hora_inicio;
-            this.days[i].start      = bh.hora_inicio ? bh.hora_inicio.slice(0, 5) : '';
-            this.days[i].end        = bh.hora_fim    ? bh.hora_fim.slice(0, 5)    : '';
+          const data = await ApiService.request(CONFIG.ENDPOINTS.BH_GETALL, null, 'POST');
+          const list = data?.businessHour ?? [];
+
+          const byDay = Object.fromEntries(list.map(bh => [bh.dia, bh]));
+
+          this.days.forEach(day => {
+            const bh = byDay[day.key];
+            if (!bh) return;
+            day.closed = !bh.hora_inicio;
+            day.start  = bh.hora_inicio ? bh.hora_inicio.slice(0, 5) : '';
+            day.end    = bh.hora_fim    ? bh.hora_fim.slice(0, 5)    : '';
           });
         } catch (e) {
           console.error('Erro ao carregar horários', e);
@@ -1222,6 +1225,7 @@
       FollowUpModule.init();
       DataManagerModule.init();
       MarkdownToolbar.init();
+      BusinessHourModule.init();
 
       // 4. Initial Data Load
       PromptModule.load();
