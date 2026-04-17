@@ -351,6 +351,69 @@
       animation: spin .7s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Business Hours Table ── */
+    .bh-table { width: 100%; border-collapse: collapse; }
+    .bh-table th {
+      padding: 10px 16px;
+      text-align: left;
+      font-family: var(--font-cond);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg2);
+    }
+    .bh-table td { padding: 10px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .bh-table tr:last-child td { border-bottom: none; }
+    .bh-table tr:hover td { background: var(--bg2); }
+    .bh-time-input {
+      width: 90px;
+      padding: 6px 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s;
+    }
+    .bh-time-input:focus { border-color: var(--orange); }
+    .bh-time-input.error { border-color: var(--error); }
+    .bh-err-msg { font-size: 11px; color: var(--error); margin-top: 4px; display: none; }
+    .bh-err-msg.visible { display: block; }
+    .bh-day-label { font-size: 13px; color: var(--text); font-weight: 600; font-family: var(--font-cond); letter-spacing: .04em; }
+    .bh-closed-badge {
+      font-size: 10px;
+      font-family: var(--font-cond);
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 2px;
+      background: var(--bg);
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+      margin-left: 8px;
+    }
+    .bh-toggle-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      font-family: var(--font-cond);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 4px 10px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .bh-toggle-btn:hover { border-color: var(--orange); color: var(--orange); }
   </style>
 </head>
 
@@ -428,6 +491,41 @@
         </button>
       </div>
     </article>
+    
+    <!-- BUSINESS HOUR MANAGEMENT TABLE -->
+    <article class="action-card">
+      <header class="action-card-header flex-between">
+        <div class="action-card-title flex-center gap-sm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          Horário de Funcionamento
+        </div>
+        
+      </header>
+      <div class="action-card-body" style="border-bottom: 1px solid var(--border);">
+        <p class="action-card-desc">
+          Define os horários em que o agente de IA irá funcionar e irá fazer prospecção <strong>ATIVA</strong>. Dias marcados como fechado ficam inativos.
+        </p>
+      </div>
+      <div class="action-card-body flex-between" style="flex-direction: column; align-items: stretch; gap: 12px;">
+        <table class="bh-table" id="bh-table">
+          <thead>
+            <tr>
+              <th style="width:35%;">Dia da semana</th>
+              <th style="width:25%;">Horário de início</th>
+              <th style="width:25%;">Horário de fim</th>
+              <th style="width:15%;"></th>
+            </tr>
+          </thead>
+          <tbody id="bh-tbody"></tbody>
+        </table>
+        <div style="display:flex; justify-content:flex-end;">
+          <button class="btn-action btn-primary" id="btn-save-business-hours" style="width:fit-content;">✓ Salvar</button>
+        </div>
+      </div>
+      </article>
 
     <!-- FOLLOW-UP CONFIGURATION CARD -->
     <article class="action-card">
@@ -556,6 +654,8 @@
         CLEAR_MESSAGES: '/api/messages/clear',
         CONFIG_LOAD: '/api/config/load',
         CONFIG_SAVE: '/api/config/follow-up',
+        BH_LOAD:  '/api/businessHour/',
+        BH_UPDATE: '/api/businessHour/',
       },
       KEYS: {
         FOLLOWUP: 'smart_followup_interval',
@@ -969,6 +1069,138 @@
       }
     };
 
+      /**
+     * BUSINESS HOURS MODULE
+     */
+    const BusinessHourModule = {
+      days: [
+        { key: 'Segunda', label: 'Segunda-feira', closed: false, start: '08:00', end: '18:00' },
+        { key: 'Terca',   label: 'Terça-feira',   closed: false, start: '08:00', end: '18:00' },
+        { key: 'Quarta',  label: 'Quarta-feira',  closed: false, start: '08:00', end: '18:00' },
+        { key: 'Quinta',  label: 'Quinta-feira',  closed: false, start: '08:00', end: '18:00' },
+        { key: 'Sexta',   label: 'Sexta-feira',   closed: false, start: '08:00', end: '18:00' },
+        { key: 'Sabado',  label: 'Sábado',        closed: true,  start: '',      end: '' },
+        { key: 'Domingo', label: 'Domingo',       closed: true,  start: '',      end: '' },
+      ],
+
+      timeToMin(t) {
+        if (!t) return null;
+        const [h, m] = t.split(':').map(Number);
+        return h * 60 + m;
+      },
+
+      validateRow(day) {
+        const startEl = document.getElementById('bh-start-' + day.key);
+        const endEl   = document.getElementById('bh-end-'   + day.key);
+        const errEl   = document.getElementById('bh-err-'   + day.key);
+        if (day.closed) return true;
+
+        const timeRe = /^([01]\d|2[0-3]):[0-5]\d$/;
+        let msg = '';
+        if (!timeRe.test(startEl.value))       msg = 'Formato inválido (HH:MM)';
+        else if (!timeRe.test(endEl.value))    msg = 'Formato inválido (HH:MM)';
+        else if (this.timeToMin(endEl.value) <= this.timeToMin(startEl.value)) msg = 'Fim deve ser maior que início';
+
+        startEl.classList.toggle('error', !!msg);
+        endEl.classList.toggle('error',   !!msg);
+        errEl.textContent = msg;
+        errEl.classList.toggle('visible', !!msg);
+        return !msg;
+      },
+
+      render() {
+        const tbody = document.getElementById('bh-tbody');
+        tbody.innerHTML = '';
+        this.days.forEach(day => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>
+              <span class="bh-day-label">${day.label}</span>
+              ${day.closed ? '<span class="bh-closed-badge">Fechado</span>' : ''}
+            </td>
+            <td>
+              ${day.closed
+                ? '<span style="color:var(--text-dim);font-size:13px;">—</span>'
+                : `<div>
+                    <input class="bh-time-input input-control" id="bh-start-${day.key}" value="${day.start}" placeholder="08:00" maxlength="5">
+                    <div class="bh-err-msg" id="bh-err-${day.key}"></div>
+                  </div>`}
+            </td>
+            <td>
+              ${day.closed
+                ? '<span style="color:var(--text-dim);font-size:13px;">—</span>'
+                : `<input class="bh-time-input input-control" id="bh-end-${day.key}" value="${day.end}" placeholder="18:00" maxlength="5">`}
+            </td>
+            <td>
+              <button class="bh-toggle-btn" data-key="${day.key}">
+                ${day.closed ? 'Abrir' : 'Fechar'}
+              </button>
+            </td>`;
+          tbody.appendChild(tr);
+
+          if (!day.closed) {
+            document.getElementById('bh-start-' + day.key).addEventListener('blur', e => { day.start = e.target.value; this.validateRow(day); });
+            document.getElementById('bh-end-'   + day.key).addEventListener('blur', e => { day.end   = e.target.value; this.validateRow(day); });
+          }
+        });
+
+        tbody.querySelectorAll('.bh-toggle-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const d = this.days.find(x => x.key === btn.dataset.key);
+            d.closed = !d.closed;
+            if (d.closed) { d.start = ''; d.end = ''; }
+            this.render();
+          });
+        });
+      },
+
+      async load() {
+        try {
+          const results = await Promise.all(
+            this.days.map(d => ApiService.request(CONFIG.ENDPOINTS.BH_LOAD + d.key, null, 'GET').catch(() => null))
+          );
+          results.forEach((data, i) => {
+            if (!data?.businessHour) return;
+            const bh = data.businessHour;
+            this.days[i].closed     = !bh.hora_inicio;
+            this.days[i].start      = bh.hora_inicio ? bh.hora_inicio.slice(0, 5) : '';
+            this.days[i].end        = bh.hora_fim    ? bh.hora_fim.slice(0, 5)    : '';
+          });
+        } catch (e) {
+          console.error('Erro ao carregar horários', e);
+        }
+        this.render();
+      },
+
+      async save() {
+        const allValid = this.days.every(d => this.validateRow(d));
+        if (!allValid) return UI.showToast('✕ Corrija os erros antes de salvar.', 'error');
+
+        const btn = document.getElementById('btn-save-business-hours');
+        UI.setLoadingState(btn, true); // ← desabilita e mostra "Aguarde..."
+
+        try {
+          await Promise.all(
+            this.days.map(d =>
+              ApiService.request(CONFIG.ENDPOINTS.BH_UPDATE + d.key, {
+                hora_inicio: d.closed ? null : d.start + ':00',
+                hora_fim:    d.closed ? null : d.end   + ':00',
+              }, 'PUT')
+            )
+          );
+          UI.showToast('✓ Horários salvos com sucesso.');
+        } catch (e) {
+          UI.showToast('✕ Erro ao salvar horários.', 'error');
+        } finally {
+          UI.setLoadingState(btn, false, '✓ Salvar Horários'); // ← restaura o botão
+        }
+      },
+
+      init() {
+        document.getElementById('btn-save-business-hours').addEventListener('click', () => this.save());
+        this.load();
+      }
+    };
     /**
      * APP BOOTSTRAP
      */
