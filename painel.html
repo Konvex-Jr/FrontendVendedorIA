@@ -1384,8 +1384,8 @@
             const bh = byDay[day.key];
             if (!bh) return;
             day.closed = !bh.hora_inicio;
-            day.start  = bh.hora_inicio ? bh.hora_inicio.slice(0, 5) : '';
-            day.end    = bh.hora_fim    ? bh.hora_fim.slice(0, 5)    : '';
+            day.start = bh.hora_inicio ? bh.hora_inicio.slice(0, 5) : '';
+            day.end = bh.hora_fim ? bh.hora_fim.slice(0, 5) : '';
           });
         } catch (e) {
           console.error('Erro ao carregar horários', e);
