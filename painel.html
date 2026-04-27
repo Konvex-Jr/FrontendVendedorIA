@@ -12,11 +12,9 @@
   <link rel="shortcut icon" href="hexagon-solid-rotated.png" type="image/x-icon">
 
   <style>
-    /* 
-       ==========================================================================
+    /* ==========================================================================
        COMPONENTS STYLES
-       ========================================================================== 
-    */
+       ========================================================================== */
 
     /* ── Utilities ── */
     .flex-center {
@@ -78,6 +76,56 @@
       line-height: 1.7;
       max-width: 540px;
       margin: 0;
+    }
+
+    /* ── Follow-up Grid ── */
+    .followup-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+
+    .followup-grid .followup-field {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .followup-grid .followup-field:nth-child(odd) {
+      border-right: 1px solid var(--border);
+    }
+
+    .followup-field-label {
+      font-family: var(--font-cond);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .followup-field-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .followup-field-input {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .followup-first-message-section {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .followup-save-row {
+      padding: 16px 24px;
+      display: flex;
+      justify-content: flex-end;
     }
 
     /* ── System Prompt Editor ── */
@@ -576,12 +624,9 @@
 
 <body style="display:flex; flex-direction:column; min-height:100vh;">
 
-  <!-- 
-       ==========================================================================
+  <!-- ==========================================================================
        HEADER COMPONENT
-       ========================================================================== 
-  -->
-
+       ========================================================================== -->
   <header class="panel-header">
     <a href="#" class="logo">
       <div class="logo-mark"></div>
@@ -601,12 +646,9 @@
     </div>
   </header>
 
-  <!-- 
-       ==========================================================================
+  <!-- ==========================================================================
        MAIN CONTENT
-       ========================================================================== 
-  -->
-
+       ========================================================================== -->
   <main class="panel-body anim-fade-up">
 
     <!-- Header Section -->
@@ -665,7 +707,6 @@
           </svg>
           Horário de Funcionamento
         </div>
-
       </header>
       <div class="action-card-body" style="border-bottom: 1px solid var(--border);">
         <p class="action-card-desc">
@@ -705,30 +746,68 @@
         </div>
       </header>
 
-      <!-- Follow-up Interval -->
-      <div class="action-card-body flex-between" style="border-bottom: 1px solid var(--border);">
-        <p class="action-card-desc">
-          Define o intervalo (em minutos) entre cada execução do <strong>smartFollowUp</strong>. O novo valor entra em
-          vigor no próximo ciclo do agente.
-        </p>
-        <div class="flex-center gap-sm" style="flex-shrink:0;">
-          <input type="number" id="followup-interval" class="input-control input-interval" min="1"
-            placeholder="ex: 30" />
-          <span class="unit-label">MIN</span>
-          <button class="btn-action btn-primary" id="btn-save-interval">✓ Salvar</button>
+      <!-- 2x2 grid of numeric fields -->
+      <div class="followup-grid">
+
+        <!-- Intervalo -->
+        <div class="followup-field">
+          <p class="followup-field-label">Intervalo de execução</p>
+          <p class="followup-field-desc">
+            Tempo (em minutos) entre cada execução do <strong>smartFollowUp</strong>. O novo valor entra em vigor no
+            próximo ciclo.
+          </p>
+          <div class="followup-field-input">
+            <input type="number" id="followup-interval" class="input-control input-interval" min="1"
+              placeholder="ex: 30" />
+            <span class="unit-label">MIN</span>
+          </div>
         </div>
+
+        <!-- Limite de follow-ups -->
+        <div class="followup-field">
+          <p class="followup-field-label">Limite de follow-ups</p>
+          <p class="followup-field-desc">
+            Quantidade máxima de mensagens enviadas por contato antes de <strong>pausar</strong> a prospecção daquele
+            número.
+          </p>
+          <div class="followup-field-input">
+            <input type="number" id="followup-limit" class="input-control input-interval" min="1" placeholder="ex: 5" />
+            <span class="unit-label">MSG</span>
+          </div>
+        </div>
+
+        <!-- Reset do contador -->
+        <div class="followup-field" style="border-bottom: none;">
+          <p class="followup-field-label">Reset do contador</p>
+          <p class="followup-field-desc">
+            Após quantos <strong>dias</strong> o contador de follow-up é resetado, permitindo retomar a prospecção do
+            contato.
+          </p>
+          <div class="followup-field-input">
+            <input type="number" id="followup-days-reset" class="input-control input-interval" min="1"
+              placeholder="ex: 30" />
+            <span class="unit-label">DIAS</span>
+          </div>
+        </div>
+
+        <!-- Placeholder para manter grid simétrico, pode ser usado futuramente -->
+        <div class="followup-field" style="border-bottom: none;">
+        </div>
+
       </div>
 
-      <!-- Follow-up First Message -->
-      <div class="action-card-body flex-between" style="flex-direction: column; align-items: stretch; gap: 12px;">
-        <p class="action-card-desc">
-          Define o texto enviado ao cliente na <strong>PRIMEIRA ABORDAGEM</strong> do smartFollowUp.
+      <!-- Primeira mensagem (full-width) -->
+      <div class="followup-first-message-section">
+        <p class="followup-field-label">Primeira abordagem</p>
+        <p class="followup-field-desc" style="margin-bottom: 12px;">
+          Texto enviado ao cliente na <strong>PRIMEIRA ABORDAGEM</strong> do smartFollowUp.
         </p>
         <textarea id="followup-first-message" rows="4" class="input-control input-textarea"></textarea>
-        <div style="display:flex; justify-content:flex-end;">
-          <button class="btn-action btn-primary" id="btn-save-first-message" style="width:fit-content;">✓
-            Salvar</button>
-        </div>
+      </div>
+
+      <!-- Single save button -->
+      <div class="followup-save-row">
+        <button class="btn-action btn-primary" id="btn-save-followup">✓ Salvar Configurações</button>
       </div>
     </article>
 
@@ -866,21 +945,20 @@
      * CONFIGURATION
      */
     const CONFIG = {
-      API_BASE_URL: 'https://vendedor-ia-backend.ixbtpi.easypanel.host',
+      API_BASE_URL: 'http://localhost:8000',
       ENDPOINTS: {
         PROMPT_LOAD: '/api/prompt/load',
         PROMPT_SAVE: '/api/prompt',
         CLEAR_MESSAGES: '/api/messages/clear',
         CONFIG_LOAD: '/api/config/load',
         CONFIG_SAVE: '/api/config/follow-up',
-        BH_LOAD: '/api/businessHour/',
         BH_UPDATE: '/api/businessHour/',
-        BH_GETALL: '/api/loadBusinessHour/'
+        BH_GETALL: '/api/loadBusinessHour/',
       },
       KEYS: {
         FOLLOWUP: 'smart_followup_interval',
         TOKEN: 'kj_token',
-        EMAIL: 'kj_email'
+        EMAIL: 'kj_email',
       }
     };
 
@@ -924,10 +1002,11 @@
           'access-token': SessionManager.getToken(),
         };
         const options = { method, headers };
-        if (payload !== null && payload !== undefined && method !== 'GET') options.body = JSON.stringify(payload);
+        if (payload !== null && payload !== undefined && method !== 'GET') {
+          options.body = JSON.stringify(payload);
+        }
         const response = await fetch(`${CONFIG.API_BASE_URL}${endpoint}`, options);
         if (!response.ok) throw new Error(`API Request failed: ${response.status}`);
-
         return response.json();
       }
     }
@@ -943,7 +1022,6 @@
         const isError = type === 'error';
         this.toast.style.borderLeftColor = isError ? 'var(--error)' : 'var(--success)';
         this.toast.style.color = isError ? 'var(--error)' : 'var(--success)';
-
         this.toast.classList.add('is-visible');
         setTimeout(() => this.toast.classList.remove('is-visible'), 3500);
       },
@@ -960,8 +1038,7 @@
       },
 
       renderDate() {
-        const dateElement = document.getElementById('current-date');
-        dateElement.textContent = new Date().toLocaleDateString('pt-BR', {
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('pt-BR', {
           weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
         });
       }
@@ -988,7 +1065,7 @@
           const data = await ApiService.request(CONFIG.ENDPOINTS.PROMPT_LOAD, { id: 'system' });
           this.savedContent = data.systemPrompt?.text || '';
           this.renderPreview(this.savedContent);
-        } catch (error) {
+        } catch {
           this.savedContent = '';
           this.renderPreview('');
         }
@@ -997,15 +1074,14 @@
       async save() {
         const newContent = this.elements.editor.value.trim();
         UI.setLoadingState(this.elements.btnSave, true);
-
         try {
           await ApiService.request(CONFIG.ENDPOINTS.PROMPT_SAVE, { systemPrompt: newContent });
           this.savedContent = newContent;
           this.renderPreview(this.savedContent);
           this.setEditMode(false);
           UI.showToast('✓ System prompt salvo com sucesso.');
-          await this.load(); // Reload to confirm
-        } catch (error) {
+          await this.load();
+        } catch {
           UI.showToast('✕ Erro ao salvar. Tente novamente.', 'error');
         } finally {
           UI.setLoadingState(this.elements.btnSave, false, '✓ Salvar');
@@ -1043,10 +1119,10 @@
         this.elements.btnCancel.addEventListener('click', () => this.setEditMode(false));
         this.elements.btnSave.addEventListener('click', () => this.save());
 
-        // Keyboard shortcuts
         this.elements.editor.addEventListener('keydown', (e) => {
-          if (e.ctrlKey || e.metaKey) {
-            if (e.key === 's') { e.preventDefault(); this.save(); }
+          if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            this.save();
           }
         });
       }
@@ -1059,61 +1135,78 @@
       elements: {
         intervalInput: document.getElementById('followup-interval'),
         firstMessageInput: document.getElementById('followup-first-message'),
-        btnSaveInterval: document.getElementById('btn-save-interval'),
-        btnSaveMessage: document.getElementById('btn-save-first-message')
+        limitInput: document.getElementById('followup-limit'),
+        daysResetInput: document.getElementById('followup-days-reset'),
+        btnSave: document.getElementById('btn-save-followup'),
       },
 
       async load() {
         try {
           const data = await ApiService.request(CONFIG.ENDPOINTS.CONFIG_LOAD, { key: CONFIG.KEYS.FOLLOWUP });
-          const config = data.scriptConfig || data;
+          const config = data.followUpConfig;
 
-          if (config.interval) {
-            this.elements.intervalInput.value = Math.round(parseInt(config.interval, 10) / 60000);
-          }
-          if (config.firstMessageText) {
-            this.elements.firstMessageInput.value = config.firstMessageText;
-          }
+          if (!config) return;
+
+          this.elements.intervalInput.value = Math.round(parseInt(config.interval, 10) / 60000);
+          this.elements.limitInput.value = config.followUpLimit;
+          this.elements.daysResetInput.value = config.daysToResetCounter;
+          this.elements.firstMessageInput.value = config.firstMessageText || '';
         } catch (error) {
-          console.error("Failed to load Follow-up config", error);
+          console.error('Failed to load Follow-up config', error);
         }
       },
 
-      async saveConfig(updates, buttonElement, successMessage) {
-        UI.setLoadingState(buttonElement, true);
-        try {
-          const payload = {
-            key: CONFIG.KEYS.FOLLOWUP,
-            interval: String((parseInt(this.elements.intervalInput.value, 10) || 0) * 60000),
-            firstMessageText: this.elements.firstMessageInput.value.trim() || '',
-            ...updates // Override specific fields if provided
-          };
+      validate() {
+        const minutes = parseInt(this.elements.intervalInput.value, 10);
+        const limit = parseInt(this.elements.limitInput.value, 10);
+        const days = parseInt(this.elements.daysResetInput.value, 10);
+        const text = this.elements.firstMessageInput.value.trim();
 
-          await ApiService.request(CONFIG.ENDPOINTS.CONFIG_SAVE, payload);
-          UI.showToast(successMessage);
-        } catch (error) {
-          UI.showToast('✕ Erro ao salvar configuração.', 'error');
+        if (!minutes || minutes < 1) {
+          UI.showToast('✕ Informe um intervalo válido (mínimo 1 minuto).', 'error');
+          return false;
+        }
+        if (!limit || limit < 1) {
+          UI.showToast('✕ Informe um limite de follow-ups válido (mínimo 1).', 'error');
+          return false;
+        }
+        if (!days || days < 1) {
+          UI.showToast('✕ Informe um número de dias para reset válido (mínimo 1).', 'error');
+          return false;
+        }
+        if (!text) {
+          UI.showToast('✕ Informe o texto da primeira mensagem.', 'error');
+          return false;
+        }
+        return true;
+      },
+
+      buildPayload() {
+        return {
+          key: CONFIG.KEYS.FOLLOWUP,
+          interval: String(parseInt(this.elements.intervalInput.value, 10) * 60000),
+          firstMessageText: this.elements.firstMessageInput.value.trim(),
+          followUpLimit: parseInt(this.elements.limitInput.value, 10),
+          daysToResetCounter: parseInt(this.elements.daysResetInput.value, 10),
+        };
+      },
+
+      async save() {
+        if (!this.validate()) return;
+
+        UI.setLoadingState(this.elements.btnSave, true);
+        try {
+          await ApiService.request(CONFIG.ENDPOINTS.CONFIG_SAVE, this.buildPayload());
+          UI.showToast('✓ Configurações de follow-up salvas com sucesso.');
+        } catch {
+          UI.showToast('✕ Erro ao salvar configurações.', 'error');
         } finally {
-          UI.setLoadingState(buttonElement, false, '✓ Salvar');
+          UI.setLoadingState(this.elements.btnSave, false, '✓ Salvar Configurações');
         }
       },
 
       init() {
-        this.elements.btnSaveInterval.addEventListener('click', () => {
-          const minutes = parseInt(this.elements.intervalInput.value, 10);
-          if (!minutes || minutes < 1) {
-            return UI.showToast('✕ Informe um intervalo válido (mínimo 1 minuto).', 'error');
-          }
-          this.saveConfig({ interval: String(minutes * 60000) }, this.elements.btnSaveInterval, `✓ Intervalo atualizado para ${minutes} min.`);
-        });
-
-        this.elements.btnSaveMessage.addEventListener('click', () => {
-          const text = this.elements.firstMessageInput.value.trim();
-          if (!text) {
-            return UI.showToast('✕ Informe o texto da primeira mensagem.', 'error');
-          }
-          this.saveConfig({ firstMessageText: text }, this.elements.btnSaveMessage, '✓ Primeira mensagem atualizada.');
-        });
+        this.elements.btnSave.addEventListener('click', () => this.save());
       }
     };
 
@@ -1133,8 +1226,7 @@
               </p>
               <p style="margin: 0; line-height: 1.65;">
                 O agente perderá o contexto de todas as interações anteriores. Esta operação <strong>não pode ser desfeita</strong>.
-              </p>
-            `,
+              </p>`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Sim, limpar tudo',
@@ -1147,7 +1239,7 @@
 
           if (!isConfirmed) return;
 
-          UI.setLoadingState(btnClear, true, 'Limpando...');
+          UI.setLoadingState(btnClear, true);
 
           try {
             await ApiService.request(CONFIG.ENDPOINTS.CLEAR_MESSAGES);
@@ -1161,7 +1253,7 @@
               timerProgressBar: true,
             });
             UI.showToast('✓ Histórico de mensagens limpo com sucesso.');
-          } catch (error) {
+          } catch {
             Swal.fire({
               title: 'Erro ao limpar',
               text: 'Não foi possível limpar as mensagens. Tente novamente.',
@@ -1212,11 +1304,9 @@
         const after = value.slice(end, end + marker.length);
 
         if (before === marker && after === marker) {
-          // Remove marker
           const nv = value.slice(0, start - marker.length) + text + value.slice(end + marker.length);
           this.applySelection(nv, start - marker.length, end - marker.length);
         } else {
-          // Add marker
           const content = text || placeholder;
           const nv = value.slice(0, start) + marker + content + marker + value.slice(end);
           this.applySelection(nv, start + marker.length, start + marker.length + content.length);
@@ -1227,12 +1317,8 @@
         const { start, end, value } = this.getSelection();
         const lineStart = value.lastIndexOf('\n', start - 1) + 1;
         const lineEnd = value.indexOf('\n', end);
-
         const block = value.slice(lineStart, lineEnd === -1 ? undefined : lineEnd);
-        const lines = block.split('\n');
-        const newLines = lines.map(l => prefix + (l || placeholder));
-        const newBlock = newLines.join('\n');
-
+        const newBlock = block.split('\n').map(l => prefix + (l || placeholder)).join('\n');
         const nv = value.slice(0, lineStart) + newBlock + (lineEnd === -1 ? '' : value.slice(lineEnd));
         this.applySelection(nv, lineStart, lineStart + newBlock.length);
       },
@@ -1253,11 +1339,9 @@
       },
 
       init() {
-        // Toolbar buttons
         document.querySelectorAll('.toolbar-btn').forEach(btn => {
           btn.addEventListener('click', () => {
-            const action = btn.dataset.action;
-            switch (action) {
+            switch (btn.dataset.action) {
               case 'bold': this.wrapInline('**', 'negrito'); break;
               case 'italic': this.wrapInline('_', 'itálico'); break;
               case 'strike': this.wrapInline('~~', 'riscado'); break;
@@ -1271,14 +1355,12 @@
           });
         });
 
-        // Heading Select
         document.getElementById('toolbar-heading').addEventListener('change', function () {
           const map = { h1: '# ', h2: '## ', h3: '### ' };
           if (map[this.value]) MarkdownToolbar.prefixLines(map[this.value], 'título');
           this.value = '';
         });
 
-        // Keyboard shortcuts for basic markdown
         this.editor.addEventListener('keydown', (e) => {
           if (e.ctrlKey || e.metaKey) {
             if (e.key === 'b') { e.preventDefault(); this.wrapInline('**', 'negrito'); }
@@ -1289,8 +1371,8 @@
     };
 
     /**
-   * BUSINESS HOURS MODULE
-   */
+     * BUSINESS HOURS MODULE
+     */
     const BusinessHourModule = {
       days: [
         { key: 'Segunda', label: 'Segunda-feira', closed: false, start: '08:00', end: '18:00' },
@@ -1341,9 +1423,9 @@
               ${day.closed
               ? '<span style="color:var(--text-dim);font-size:13px;">—</span>'
               : `<div>
-                    <input class="bh-time-input input-control" id="bh-start-${day.key}" value="${day.start}" placeholder="08:00" maxlength="5">
-                    <div class="bh-err-msg" id="bh-err-${day.key}"></div>
-                  </div>`}
+                     <input class="bh-time-input input-control" id="bh-start-${day.key}" value="${day.start}" placeholder="08:00" maxlength="5">
+                     <div class="bh-err-msg" id="bh-err-${day.key}"></div>
+                   </div>`}
             </td>
             <td>
               ${day.closed
@@ -1377,7 +1459,6 @@
         try {
           const data = await ApiService.request(CONFIG.ENDPOINTS.BH_GETALL, undefined, 'GET');
           const list = data?.businessHour ?? [];
-
           const byDay = Object.fromEntries(list.map(bh => [bh.dia, bh]));
 
           this.days.forEach(day => {
@@ -1398,7 +1479,7 @@
         if (!allValid) return UI.showToast('✕ Corrija os erros antes de salvar.', 'error');
 
         const btn = document.getElementById('btn-save-business-hours');
-        UI.setLoadingState(btn, true); // ← desabilita e mostra "Aguarde..."
+        UI.setLoadingState(btn, true);
 
         try {
           await Promise.all(
@@ -1410,10 +1491,10 @@
             )
           );
           UI.showToast('✓ Horários salvos com sucesso.');
-        } catch (e) {
+        } catch {
           UI.showToast('✕ Erro ao salvar horários.', 'error');
         } finally {
-          UI.setLoadingState(btn, false, '✓ Salvar Horários'); // ← restaura o botão
+          UI.setLoadingState(btn, false, '✓ Salvar');
         }
       },
 
@@ -1422,33 +1503,26 @@
         this.load();
       }
     };
+
     /**
      * APP BOOTSTRAP
      */
     document.addEventListener('DOMContentLoaded', () => {
-
-      // 1. Authenticate
       if (!SessionManager.checkAuth()) return;
 
-      // 2. Setup Base UI
       SessionManager.renderUserInfo();
       UI.renderDate();
 
-      document.getElementById('btn-logout').addEventListener('click', () => {
-        SessionManager.logout();
-      });
+      document.getElementById('btn-logout').addEventListener('click', () => SessionManager.logout());
 
-      // 3. Initialize Modules
       PromptModule.init();
       FollowUpModule.init();
       DataManagerModule.init();
       MarkdownToolbar.init();
       BusinessHourModule.init();
 
-      // 4. Initial Data Load
       PromptModule.load();
       FollowUpModule.load();
-      // BusinessHourModule.load() já é chamado dentro do próprio init()
     });
   </script>
 
